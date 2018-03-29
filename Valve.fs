@@ -1,4 +1,5 @@
 ﻿module Valve
+open Base
 
 type Command
     = Close
@@ -18,7 +19,7 @@ let private minPosition = 0
 let private maxPosition = 100
 let private rate = 11
 
-let private updatePosition state =
+let private update info state =
     match state with
     | { action = Closing } -> { state with position = state.position - rate |> max minPosition }
     | { action = Opening } -> { state with position = state.position + rate |> min maxPosition }
@@ -36,8 +37,8 @@ let private apply command state =
     | Some Open  when state.action = Idle -> { state with action = Opening }
     | _ -> state
 
-let step command =
-    transition >> (apply command) >> updatePosition
+let step info command =
+    transition >> (apply command) >> (update info)
 
 let init =
     { position = 0; action = Idle }
