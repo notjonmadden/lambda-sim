@@ -1,12 +1,16 @@
 ﻿// Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
 
+open Base
 open Valve
 open Tank
 
+let step command =
+    Valve.step { elapsed = 0.05<sec> } command
+
 let run stop v =
     let rec runner v vs n =
-        let v' = Valve.step None v
+        let v' = step None v
 
         match n with
         | s when s = stop -> vs
@@ -16,7 +20,7 @@ let run stop v =
 
 [<EntryPoint>]
 let main argv = 
-    let vs = Valve.init |> Valve.step (Some Open) |> run 12
+    let vs = Valve.init |> step (Some Open) |> run 12
 
     printfn "%A" vs
     0
