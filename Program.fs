@@ -6,21 +6,24 @@ open Valve
 open Tank
 
 let step command =
-    Valve.step { elapsed = 0.05<sec> } command
+    Valve.step { command = command; inFlow = 5.0<flowrate> }
 
-let run stop v =
-    let rec runner v vs n =
+let run stop v t =
+    let rec runner v t vs n =
         let v' = step None v
+        let t' = Tank.step { flow = v'.outFlow; elapsed = 0.05<sec> } t
 
         match n with
         | s when s = stop -> vs
-        | _ -> v' :: runner v' vs (n + 1) 
+        | _ -> (v', t') :: runner v' t' vs (n + 1) 
 
-    runner v [] 0
+    runner v t [] 0
 
 [<EntryPoint>]
 let main argv = 
-    let vs = Valve.init |> step (Some Open) |> run 12
+    let v = Valve.init |> step (Some Open)
+    let t = Tank.init
+    let vs = run 25 v t
 
-    printfn "%A" vs
+    vs |> List.map (fun p -> (Valve.show (fst p)), Tank.show (snd p)) |> List.iter (fun p -> printfn "%A" p)
     0

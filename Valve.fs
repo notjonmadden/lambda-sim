@@ -11,19 +11,31 @@ type Action
     | Opening
 
 type State =
-    { position : int
+    { position : float
     ; action : Action
+    ; outFlow : float<flowrate>
     }
 
-let private minPosition = 0
-let private maxPosition = 100
-let private rate = 11
+type Input =
+    { command : Command option
+    ; inFlow : float<flowrate>
+    }
 
-let private update info state =
+let private minPosition = 0.0
+let private maxPosition = 100.0
+let private rate = 11.0
+
+let private updatePosition state =
     match state with
     | { action = Closing } -> { state with position = state.position - rate |> max minPosition }
     | { action = Opening } -> { state with position = state.position + rate |> min maxPosition }
     | _ -> state
+
+let private updateOutFlow input state =
+    { state with outFlow = input.inFlow * (state.position / 100.0) }
+
+let private update input =
+    updatePosition >> (updateOutFlow input)
 
 let private transition state =
     match state with
@@ -37,8 +49,14 @@ let private apply command state =
     | Some Open  when state.action = Idle -> { state with action = Opening }
     | _ -> state
 
-let step info command =
-    transition >> (apply command) >> (update info)
+let step input =
+    transition >> (apply input.command) >> (update input)
 
 let init =
-    { position = 0; action = Idle }
+    { position = 0.0
+    ; action = Idle
+    ; outFlow = 0.0<flowrate>
+    }
+
+let show v =
+    System.String.Format("Position = {0}", v.position)

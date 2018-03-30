@@ -3,22 +3,34 @@
 open Base
 
 type State =
-    { volume : float<liter>
-    ; inFlowRate : float<flowrate> }
+    { volume : float<liters>
+    }
+
+type Input = 
+    { elapsed : float<sec>
+    ; flow : float<flowrate>
+    }
 
 type Action
     = Idle
 
-let update info state =
-    let inFlowSinceLastStep = state.inFlowRate * info.elapsed
+let private update input state =
+    let inFlowSinceLastStep = input.flow * input.elapsed
 
     { state with volume = state.volume + inFlowSinceLastStep }
 
-let transition state =
+let private transition state =
     state
 
-let apply command state =
+let private apply command state =
     state
 
-let step info command =
-    transition >> (apply command) >> (update info)
+let step info =
+    transition >> (update info)
+
+let init =
+    { volume = 0.0<liters>
+    }
+
+let show t =
+        System.String.Format("Volume = {0}", t.volume)
